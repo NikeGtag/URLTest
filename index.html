@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>URL CHAOS ENGINE</title>
+  <style>
+    body { 
+      font-family: 'Courier New', monospace; 
+      background: #000; 
+      color: #0f0; 
+      text-align: center; 
+      padding: 40px;
+      overflow: hidden;
+    }
+    .glitch {
+      animation: glitch 1s linear infinite;
+      font-size: 2em;
+      margin: 20px;
+    }
+    button {
+      background: #300; 
+      color: #0f0; 
+      border: 2px solid #0f0; 
+      padding: 15px 30px; 
+      font-size: 1.2em; 
+      margin: 10px;
+      cursor: pointer;
+    }
+    button:hover { background: #600; }
+    @keyframes glitch {
+      0% { text-shadow: 0.05em 0 0 #0f0, -0.05em 0 0 #f00; }
+      15% { text-shadow: 0.05em 0 0 #0f0, -0.05em 0 0 #f00; }
+      16% { text-shadow: -0.05em -0.025em 0 #0f0, 0.025em 0.035em 0 #f00; }
+      50% { text-shadow: -0.05em -0.025em 0 #0f0, 0.025em 0.035em 0 #f00; }
+      51% { text-shadow: 0.05em 0.025em 0 #0f0, -0.025em -0.05em 0 #f00; }
+      83% { text-shadow: 0.05em 0.025em 0 #0f0, -0.025em -0.05em 0 #f00; }
+      84% { text-shadow: -0.05em 0 0 #0f0, 0.05em 0 0 #f00; }
+      100% { text-shadow: -0.05em 0 0 #0f0, 0.05em 0 0 #f00; }
+    }
+  </style>
+</head>
+<body>
+  <h1 class="glitch">URL CHAOS ENGINE v9.9</h1>
+  <p id="target">TARGET LOCKED: <span id="url">waiting...</span></p>
+  <button id="start">UNLEASH CHAOS</button>
+  <button id="stop">CEASE FIRE</button>
+  <button id="randomize">RANDOM TARGETS</button>
+
+  <script>
+    const urls = [
+      "https://http.cat/404",
+      "https://httpbin.org/uuid",
+      "https://api.ipify.org",
+      "https://randomuser.me/api/",
+      "https://dog.ceo/api/breeds/image/random",
+      "https://v2.jokeapi.dev/joke/Any",
+      "https://cataas.com/cat",
+      "https://httpstatusdogs.com",
+      "https://placekitten.com/800/600",
+      "https://baconipsum.com/api/?type=meat-and-filler"
+    ];
+
+    let chaosInterval = null;
+    let isRandom = false;
+
+    function getRandomURL() {
+      return urls[Math.floor(Math.random() * urls.length)];
+    }
+
+    function changeURL() {
+      const url = isRandom ? getRandomURL() : urls[Math.floor(Date.now() / 1000) % urls.length];
+      document.getElementById("url").textContent = url;
+      setTimeout(() => {
+        window.location.href = url;
+      }, 600);
+    }
+
+    document.getElementById("start").onclick = () => {
+      if (chaosInterval) return;
+      document.getElementById("target").style.color = "#f00";
+      chaosInterval = setInterval(changeURL, 1200);
+      changeURL();
+    };
+
+    document.getElementById("stop").onclick = () => {
+      if (chaosInterval) clearInterval(chaosInterval);
+      chaosInterval = null;
+      document.getElementById("target").style.color = "#0f0";
+      document.getElementById("url").textContent = "HALTED.";
+    };
+
+    document.getElementById("randomize").onclick = () => {
+      isRandom = !isRandom;
+      document.getElementById("randomize").textContent = isRandom ? "PREDICTABLE MODE" : "RANDOM TARGETS";
+      document.getElementById("randomize").style.background = isRandom ? "#630" : "#300";
+    };
+
+    // Auto-start on load
+    setTimeout(() => document.getElementById("start").click(), 1000);
+  </script>
+</body>
+</html>
