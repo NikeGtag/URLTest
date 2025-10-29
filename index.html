@@ -3,101 +3,103 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>URL CHAOS ENGINE</title>
+  <title>URL Spoofer</title>
   <style>
-    body { 
-      font-family: 'Courier New', monospace; 
-      background: #000; 
-      color: #0f0; 
-      text-align: center; 
-      padding: 40px;
-      overflow: hidden;
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      padding: 60px;
+      background: #f4f4f4;
+      color: #333;
     }
-    .glitch {
-      animation: glitch 1s linear infinite;
-      font-size: 2em;
-      margin: 20px;
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    #url-display {
+      margin: 20px 0;
+      padding: 12px;
+      background: #eee;
+      border-radius: 8px;
+      font-family: monospace;
+      font-size: 1.1em;
     }
     button {
-      background: #300; 
-      color: #0f0; 
-      border: 2px solid #0f0; 
-      padding: 15px 30px; 
-      font-size: 1.2em; 
+      padding: 10px 20px;
       margin: 10px;
+      font-size: 1em;
       cursor: pointer;
+      border: none;
+      border-radius: 6px;
     }
-    button:hover { background: #600; }
-    @keyframes glitch {
-      0% { text-shadow: 0.05em 0 0 #0f0, -0.05em 0 0 #f00; }
-      15% { text-shadow: 0.05em 0 0 #0f0, -0.05em 0 0 #f00; }
-      16% { text-shadow: -0.05em -0.025em 0 #0f0, 0.025em 0.035em 0 #f00; }
-      50% { text-shadow: -0.05em -0.025em 0 #0f0, 0.025em 0.035em 0 #f00; }
-      51% { text-shadow: 0.05em 0.025em 0 #0f0, -0.025em -0.05em 0 #f00; }
-      83% { text-shadow: 0.05em 0.025em 0 #0f0, -0.025em -0.05em 0 #f00; }
-      84% { text-shadow: -0.05em 0 0 #0f0, 0.05em 0 0 #f00; }
-      100% { text-shadow: -0.05em 0 0 #0f0, 0.05em 0 0 #f00; }
-    }
+    .start { background: #4CAF50; color: white; }
+    .stop { background: #f44336; color: white; }
   </style>
 </head>
 <body>
-  <h1 class="glitch">URL CHAOS ENGINE v9.9</h1>
-  <p id="target">TARGET LOCKED: <span id="url">waiting...</span></p>
-  <button id="start">UNLEASH CHAOS</button>
-  <button id="stop">CEASE FIRE</button>
-  <button id="randomize">RANDOM TARGETS</button>
+  <div class="container">
+    <h1>URL Spoofer Demo</h1>
+    <p>This page <strong>never reloads</strong>, but the URL in your browser bar changes constantly.</p>
+    <div id="url-display">Current URL: <span id="current-url">loading...</span></div>
+    <button class="start" onclick="startSpoofing()">Start Spoofing</button>
+    <button class="stop" onclick="stopSpoofing()">Stop</button>
+  </div>
 
   <script>
-    const urls = [
-      "https://http.cat/404",
-      "https://httpbin.org/uuid",
-      "https://api.ipify.org",
-      "https://randomuser.me/api/",
-      "https://dog.ceo/api/breeds/image/random",
-      "https://v2.jokeapi.dev/joke/Any",
-      "https://cataas.com/cat",
-      "https://httpstatusdogs.com",
-      "https://placekitten.com/800/600",
-      "https://baconipsum.com/api/?type=meat-and-filler"
+    let spoofInterval = null;
+    const domains = [
+      "login.microsoft.com",
+      "account.google.com",
+      "secure.paypal.com",
+      "auth.apple.com",
+      "bankofamerica.com",
+      "chase.com",
+      "wellsfargo.com",
+      "citibank.com",
+      "amazon.com/signin",
+      "facebook.com/login",
+      "instagram.com/accounts",
+      "netflix.com/login"
     ];
 
-    let chaosInterval = null;
-    let isRandom = false;
-
     function getRandomURL() {
-      return urls[Math.floor(Math.random() * urls.length)];
+      const domain = domains[Math.floor(Math.random() * domains.length)];
+      const path = Math.random().toString(36).substring(2, 15);
+      const params = `?session=${Date.now()}&ref=${Math.random().toString(36).substring(7)}`;
+      return `https://${domain}/${path}${params}`;
     }
 
-    function changeURL() {
-      const url = isRandom ? getRandomURL() : urls[Math.floor(Date.now() / 1000) % urls.length];
-      document.getElementById("url").textContent = url;
-      setTimeout(() => {
-        window.location.href = url;
-      }, 600);
+    function updateDisplay() {
+      document.getElementById("current-url").textContent = window.location.href;
     }
 
-    document.getElementById("start").onclick = () => {
-      if (chaosInterval) return;
-      document.getElementById("target").style.color = "#f00";
-      chaosInterval = setInterval(changeURL, 1200);
-      changeURL();
-    };
+    function spoofURL() {
+      const fakeURL = getRandomURL();
+      history.pushState({}, "", fakeURL);
+      updateDisplay();
+    }
 
-    document.getElementById("stop").onclick = () => {
-      if (chaosInterval) clearInterval(chaosInterval);
-      chaosInterval = null;
-      document.getElementById("target").style.color = "#0f0";
-      document.getElementById("url").textContent = "HALTED.";
-    };
+    function startSpoofing() {
+      if (spoofInterval) return;
+      spoofInterval = setInterval(spoofURL, 800); // Change every 0.8 seconds
+      spoofURL(); // Immediate first change
+    }
 
-    document.getElementById("randomize").onclick = () => {
-      isRandom = !isRandom;
-      document.getElementById("randomize").textContent = isRandom ? "PREDICTABLE MODE" : "RANDOM TARGETS";
-      document.getElementById("randomize").style.background = isRandom ? "#630" : "#300";
-    };
+    function stopSpoofing() {
+      if (spoofInterval) {
+        clearInterval(spoofInterval);
+        spoofInterval = null;
+      }
+    }
 
-    // Auto-start on load
-    setTimeout(() => document.getElementById("start").click(), 1000);
+    // Update display on load
+    window.addEventListener("load", updateDisplay);
+    // Optional: Update on popstate (back/forward)
+    window.addEventListener("popstate", updateDisplay);
   </script>
 </body>
 </html>
