@@ -3,14 +3,13 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>URL SPOOFER 9000</title>
+  <title>URL SPOOFER 9000 - CUSTOM TARGETS</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap');
     body {
       margin: 0; padding: 0; overflow: hidden;
       background: #000; color: #0f0;
       font-family: 'Orbitron', monospace;
-      text-align: center;
     }
     .matrix {
       position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -21,26 +20,34 @@
     .container {
       position: absolute; top: 50%; left: 50%;
       transform: translate(-50%, -50%);
-      padding: 30px; width: 80%; max-width: 700px;
-      background: rgba(0,15,0,0.8); border: 2px solid #0f0;
-      border-radius: 15px; box-shadow: 0 0 30px #0f0;
+      padding: 30px; width: 85%; max-width: 800px;
+      background: rgba(0,15,0,0.9); border: 2px solid #0f0;
+      border-radius: 15px; box-shadow: 0 0 40px #0f0;
     }
-    h1 { font-size: 2.5em; text-shadow: 0 0 10px #0f0; margin: 0; }
+    h1 { font-size: 2.3em; text-shadow: 0 0 15px #0f0; margin: 0 0 20px; }
+    textarea {
+      width: 100%; height: 140px; padding: 15px;
+      background: #001100; color: #0f0; border: 1px solid #0f0;
+      border-radius: 10px; font-family: 'Courier New', monospace;
+      font-size: 1em; resize: vertical; margin: 15px 0;
+      box-shadow: inset 0 0 10px rgba(0,255,0,0.3);
+    }
     #url-bar {
-      margin: 25px 0; padding: 15px;
-      background: #001100; border: 1px solid #0f0;
-      border-radius: 8px; font-family: monospace;
-      font-size: 1.1em; color: #0f0; text-shadow: 0 0 5px #0f0;
+      margin: 20px 0; padding: 16px;
+      background: #001a00; border: 1px solid #0f0;
+      border-radius: 10px; font-family: monospace;
+      font-size: 1.1em; color: #0f0; text-shadow: 0 0 6px #0f0;
       word-break: break-all;
     }
     .btn {
-      padding: 12px 25px; margin: 10px; font-size: 1.2em;
+      padding: 14px 28px; margin: 12px; font-size: 1.3em;
       background: #001a00; color: #0f0; border: 2px solid #0f0;
-      border-radius: 8px; cursor: pointer; font-weight: bold;
-      transition: all 0.3s; text-shadow: 0 0 8px #0f0;
+      border-radius: 10px; cursor: pointer; font-weight: bold;
+      transition: all 0.3s; text-shadow: 0 0 10px #0f0;
     }
-    .btn:hover { background: #003300; box-shadow: 0 0 15px #0f0; }
+    .btn:hover { background: #003300; box-shadow: 0 0 20px #0f0; }
     .btn:active { transform: scale(0.95); }
+    .example { font-size: 0.9em; color: #0a0; margin-top: 10px; }
     @keyframes pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
   </style>
 </head>
@@ -48,41 +55,50 @@
   <div class="matrix"></div>
   <div class="container">
     <h1>URL SPOOFER 9000</h1>
-    <p>Page stays. URL lies. <span style="color:#f00;">Forever.</span></p>
-    <div id="url-bar">SPOOFING: <span id="current">initializing matrix...</span></div>
+    <p>PASTE YOUR TARGET URLs BELOW (ONE PER LINE)</p>
+    <textarea id="url-list" placeholder="https://secure.bankofamerica.com/login
+https://id.apple.com/auth
+paypal-verify.com/session"></textarea>
+    <p class="example">Full URLs or domains accepted. https:// added automatically.</p>
+
+    <div id="url-bar">SPOOFING: <span id="current">awaiting input...</span></div>
+
     <button class="btn" id="start">ACTIVATE SPOOF</button>
     <button class="btn" id="stop">KILL SWITCH</button>
-    <button class="btn" id="turbo">TURBO MODE</button>
+    <button class="btn" id="turbo">TURBO (150ms)</button>
   </div>
 
   <script>
-    const realDomain = window.location.hostname;
-    const fakeDomains = [
-      "secure-login.microsoft.com", "account.google.com", "paypal-secure.com",
-      "id.apple.com", "online.wellsfargo.com", "chase.com/signin",
-      "citibank.com/auth", "amazon.com/ap/signin", "facebook.com/login",
-      "instagram.com/accounts/login", "netflix.com/login", "bankofamerica.com"
-    ];
-
     let interval = null;
-    let speed = 800;
+    let speed = 1000;
+    let urls = [];
 
-    function spoof() {
-      const domain = fakeDomains[Math.floor(Math.random() * fakeDomains.length)];
-      const path = Math.random().toString(36).substring(2, 10);
-      const token = Date.now().toString(36);
-      const session = Math.random().toString(36).substring(2, 15);
-      const fakeURL = `https://${domain}/verify/${path}?session=${session}&token=${token}&ref=${realDomain}`;
-      
-      history.pushState({spoof: true}, "", fakeURL);
-      document.getElementById("current").textContent = fakeURL;
+    function loadURLs() {
+      const input = document.getElementById("url-list").value.trim();
+      urls = input
+        .split('\n')
+        .map(l => l.trim())
+        .filter(l => l && (l.includes('.') || l.startsWith('http')))
+        .map(u => u.startsWith('http') ? u : 'https://' + u);
+      return urls.length > 0;
     }
 
-    function updateDisplay() {
-      document.getElementById("current").textContent = window.location.href;
+    function spoof() {
+      if (urls.length === 0) return;
+      const url = urls[Math.floor(Math.random() * urls.length)];
+      const fakePath = Math.random().toString(36).substring(2, 12);
+      const token = Date.now().toString(36);
+      const finalURL = `${url.split('/')[0]}//${url.split('/')[2]}/${fakePath}?t=${token}&s=${Math.random().toString(36).substring(7)}`;
+      
+      history.pushState({spoof: true}, "", finalURL);
+      document.getElementById("current").textContent = finalURL;
     }
 
     document.getElementById("start").onclick = () => {
+      if (!loadURLs()) {
+        alert("Enter at least one URL, fucker.");
+        return;
+      }
       if (interval) return;
       interval = setInterval(spoof, speed);
       spoof();
@@ -91,24 +107,28 @@
     document.getElementById("stop").onclick = () => {
       if (interval) clearInterval(interval);
       interval = null;
-      document.getElementById("current").textContent = "SPOOF HALTED.";
+      document.getElementById("current").textContent = "SPOOF TERMINATED.";
     };
 
     document.getElementById("turbo").onclick = () => {
-      speed = speed === 800 ? 150 : 800;
-      document.getElementById("turbo").textContent = speed === 150 ? "NORMAL MODE" : "TURBO MODE";
+      speed = speed === 1000 ? 150 : 1000;
+      document.getElementById("turbo").textContent = speed === 150 ? "NORMAL (1s)" : "TURBO (150ms)";
       if (interval) {
         clearInterval(interval);
         interval = setInterval(spoof, speed);
       }
     };
 
-    // Start on load
-    setTimeout(() => document.getElementById("start").click(), 500);
+    // Auto-start if URLs pre-filled
+    window.addEventListener("load", () => {
+      if (document.getElementById("url-list").value.trim()) {
+        setTimeout(() => document.getElementById("start").click(), 800);
+      }
+    });
 
-    // Keep display updated
-    window.addEventListener("popstate", updateDisplay);
-    window.addEventListener("load", updateDisplay);
+    window.addEventListener("popstate", () => {
+      document.getElementById("current").textContent = window.location.href;
+    });
   </script>
 </body>
 </html>
