@@ -3,103 +3,112 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>URL Spoofer</title>
+  <title>URL SPOOFER 9000</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@900&display=swap');
     body {
-      font-family: 'Segoe UI', sans-serif;
+      margin: 0; padding: 0; overflow: hidden;
+      background: #000; color: #0f0;
+      font-family: 'Orbitron', monospace;
       text-align: center;
-      padding: 60px;
-      background: #f4f4f4;
-      color: #333;
+    }
+    .matrix {
+      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+      background: linear-gradient(180deg, rgba(0,255,0,0.1) 0%, transparent 100%);
+      pointer-events: none; z-index: -1;
+      animation: pulse 3s infinite;
     }
     .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: white;
-      padding: 30px;
-      border-radius: 12px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 30px; width: 80%; max-width: 700px;
+      background: rgba(0,15,0,0.8); border: 2px solid #0f0;
+      border-radius: 15px; box-shadow: 0 0 30px #0f0;
     }
-    #url-display {
-      margin: 20px 0;
-      padding: 12px;
-      background: #eee;
-      border-radius: 8px;
-      font-family: monospace;
-      font-size: 1.1em;
+    h1 { font-size: 2.5em; text-shadow: 0 0 10px #0f0; margin: 0; }
+    #url-bar {
+      margin: 25px 0; padding: 15px;
+      background: #001100; border: 1px solid #0f0;
+      border-radius: 8px; font-family: monospace;
+      font-size: 1.1em; color: #0f0; text-shadow: 0 0 5px #0f0;
+      word-break: break-all;
     }
-    button {
-      padding: 10px 20px;
-      margin: 10px;
-      font-size: 1em;
-      cursor: pointer;
-      border: none;
-      border-radius: 6px;
+    .btn {
+      padding: 12px 25px; margin: 10px; font-size: 1.2em;
+      background: #001a00; color: #0f0; border: 2px solid #0f0;
+      border-radius: 8px; cursor: pointer; font-weight: bold;
+      transition: all 0.3s; text-shadow: 0 0 8px #0f0;
     }
-    .start { background: #4CAF50; color: white; }
-    .stop { background: #f44336; color: white; }
+    .btn:hover { background: #003300; box-shadow: 0 0 15px #0f0; }
+    .btn:active { transform: scale(0.95); }
+    @keyframes pulse { 0%, 100% { opacity: 0.7; } 50% { opacity: 1; } }
   </style>
 </head>
 <body>
+  <div class="matrix"></div>
   <div class="container">
-    <h1>URL Spoofer Demo</h1>
-    <p>This page <strong>never reloads</strong>, but the URL in your browser bar changes constantly.</p>
-    <div id="url-display">Current URL: <span id="current-url">loading...</span></div>
-    <button class="start" onclick="startSpoofing()">Start Spoofing</button>
-    <button class="stop" onclick="stopSpoofing()">Stop</button>
+    <h1>URL SPOOFER 9000</h1>
+    <p>Page stays. URL lies. <span style="color:#f00;">Forever.</span></p>
+    <div id="url-bar">SPOOFING: <span id="current">initializing matrix...</span></div>
+    <button class="btn" id="start">ACTIVATE SPOOF</button>
+    <button class="btn" id="stop">KILL SWITCH</button>
+    <button class="btn" id="turbo">TURBO MODE</button>
   </div>
 
   <script>
-    let spoofInterval = null;
-    const domains = [
-      "login.microsoft.com",
-      "account.google.com",
-      "secure.paypal.com",
-      "auth.apple.com",
-      "bankofamerica.com",
-      "chase.com",
-      "wellsfargo.com",
-      "citibank.com",
-      "amazon.com/signin",
-      "facebook.com/login",
-      "instagram.com/accounts",
-      "netflix.com/login"
+    const realDomain = window.location.hostname;
+    const fakeDomains = [
+      "secure-login.microsoft.com", "account.google.com", "paypal-secure.com",
+      "id.apple.com", "online.wellsfargo.com", "chase.com/signin",
+      "citibank.com/auth", "amazon.com/ap/signin", "facebook.com/login",
+      "instagram.com/accounts/login", "netflix.com/login", "bankofamerica.com"
     ];
 
-    function getRandomURL() {
-      const domain = domains[Math.floor(Math.random() * domains.length)];
-      const path = Math.random().toString(36).substring(2, 15);
-      const params = `?session=${Date.now()}&ref=${Math.random().toString(36).substring(7)}`;
-      return `https://${domain}/${path}${params}`;
+    let interval = null;
+    let speed = 800;
+
+    function spoof() {
+      const domain = fakeDomains[Math.floor(Math.random() * fakeDomains.length)];
+      const path = Math.random().toString(36).substring(2, 10);
+      const token = Date.now().toString(36);
+      const session = Math.random().toString(36).substring(2, 15);
+      const fakeURL = `https://${domain}/verify/${path}?session=${session}&token=${token}&ref=${realDomain}`;
+      
+      history.pushState({spoof: true}, "", fakeURL);
+      document.getElementById("current").textContent = fakeURL;
     }
 
     function updateDisplay() {
-      document.getElementById("current-url").textContent = window.location.href;
+      document.getElementById("current").textContent = window.location.href;
     }
 
-    function spoofURL() {
-      const fakeURL = getRandomURL();
-      history.pushState({}, "", fakeURL);
-      updateDisplay();
-    }
+    document.getElementById("start").onclick = () => {
+      if (interval) return;
+      interval = setInterval(spoof, speed);
+      spoof();
+    };
 
-    function startSpoofing() {
-      if (spoofInterval) return;
-      spoofInterval = setInterval(spoofURL, 800); // Change every 0.8 seconds
-      spoofURL(); // Immediate first change
-    }
+    document.getElementById("stop").onclick = () => {
+      if (interval) clearInterval(interval);
+      interval = null;
+      document.getElementById("current").textContent = "SPOOF HALTED.";
+    };
 
-    function stopSpoofing() {
-      if (spoofInterval) {
-        clearInterval(spoofInterval);
-        spoofInterval = null;
+    document.getElementById("turbo").onclick = () => {
+      speed = speed === 800 ? 150 : 800;
+      document.getElementById("turbo").textContent = speed === 150 ? "NORMAL MODE" : "TURBO MODE";
+      if (interval) {
+        clearInterval(interval);
+        interval = setInterval(spoof, speed);
       }
-    }
+    };
 
-    // Update display on load
-    window.addEventListener("load", updateDisplay);
-    // Optional: Update on popstate (back/forward)
+    // Start on load
+    setTimeout(() => document.getElementById("start").click(), 500);
+
+    // Keep display updated
     window.addEventListener("popstate", updateDisplay);
+    window.addEventListener("load", updateDisplay);
   </script>
 </body>
 </html>
